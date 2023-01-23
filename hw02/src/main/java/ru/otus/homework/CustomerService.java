@@ -1,22 +1,25 @@
 package ru.otus.homework;
 
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 public class CustomerService {
 
-    private final Map<Customer, String> sortedMap = new TreeMap<>(Comparator.comparingLong(Customer::getScores));
+    private final NavigableMap<Customer, String> navigableMap = new TreeMap<>(Comparator.comparingLong(Customer::getScores));
 
     public Map.Entry<Customer, String> getSmallest() {
-        return getImmutableEntryWithCopiedKey(((TreeMap<Customer, String>) sortedMap).firstEntry());
+        return getImmutableEntryWithCopiedKey(navigableMap.firstEntry());
     }
 
     public Map.Entry<Customer, String> getNext(Customer customer) {
-        return getImmutableEntryWithCopiedKey(((TreeMap<Customer, String>) sortedMap).higherEntry(customer));
+        return getImmutableEntryWithCopiedKey(navigableMap.higherEntry(customer));
     }
 
     public void add(Customer customer, String data) {
-        sortedMap.put(customer, data);
+        navigableMap.put(customer, data);
     }
 
     private static Map.Entry<Customer, String> getImmutableEntryWithCopiedKey(Map.Entry<Customer, String> entry) {
