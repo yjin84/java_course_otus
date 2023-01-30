@@ -74,34 +74,29 @@ public class TestRunner {
     private static boolean runTest(Class<?> testClass, List<Method> beforeMethods, Method testMethod, List<Method> afterMethods) {
         Object instance = ReflectionHelper.instantiate(testClass);
 
-        try {
+       try {
             log("Calling before methods");
             callMethods(instance, beforeMethods);
-        } catch (Exception ex) {
-            log("Error occurred when call before methods: " + ex.getMessage());
-            return false;
-        }
 
-        try {
             log("Calling test method");
             callMethod(instance, testMethod);
             return true;
         } catch (Exception ex) {
-            log("Error occurred when call test method: " + ex.getMessage());
+            log(ex.getMessage());
             return false;
         } finally {
             try {
                 log("Calling after methods");
                 callMethods(instance, afterMethods);
             } catch (Exception ex) {
-                log("Error occurred when call test methods: " + ex.getMessage());
+                log(ex.getMessage());
             }
-            System.out.println("===");
+            log("===");
         }
     }
 
-    private static void callMethods(Object instance, List<Method> beforeMethods) {
-        for (Method method : beforeMethods) {
+    private static void callMethods(Object instance, List<Method> methods) {
+        for (Method method : methods) {
             callMethod(instance, method);
         }
     }
@@ -112,7 +107,7 @@ public class TestRunner {
                 method.setAccessible(true);
                 method.invoke(instance);
             } catch (Exception ex) {
-                throw new RuntimeException(ex);
+                throw new RuntimeException("Error occurred when call method " + method.getName() + ": " + ex, ex);
             }
         }
     }
