@@ -5,6 +5,12 @@ import ru.otus.aop.annotation.Log;
 public class DefaultTestLogging implements TestLoggingInterface {
     @Log
     @Override
+    public void calculation() {
+        System.out.println("Call calculation0");
+    }
+
+    @Log
+    @Override
     public void calculation(int param1) {
         System.out.println("Call calculation1");
     }

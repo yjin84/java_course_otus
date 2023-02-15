@@ -5,9 +5,9 @@ import ru.otus.aop.annotation.Log;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MyAwesomeIoC {
 
@@ -15,15 +15,52 @@ public class MyAwesomeIoC {
 
     }
 
-    static TestLoggingInterface createTestLogging() {
-        InvocationHandler handler = new DemoInvocationHandler(new DefaultTestLogging());
+    static TestLoggingInterface createProxyFor(TestLoggingInterface instance) {
+        InvocationHandler handler = new DemoInvocationHandler(instance);
         return (TestLoggingInterface) Proxy.newProxyInstance(MyAwesomeIoC.class.getClassLoader(),
                 new Class<?>[]{TestLoggingInterface.class}, handler);
     }
 
     static class DemoInvocationHandler implements InvocationHandler {
         private final TestLoggingInterface testLoggingInterface;
-        private final List<Method> loggingMethods;
+        private final Set<MetaMethod> loggingMethods;
+
+        private final static class MetaMethod {
+            private final String name;
+            private final int parametersCount;
+
+            private final Class<?>[] parametersTypes;
+
+            private MetaMethod(String methodName, int parametersCount, Class<?>[] parametersTypes) {
+                this.name = methodName;
+                this.parametersCount = parametersCount;
+                this.parametersTypes = parametersTypes;
+            }
+
+            public static MetaMethod valueOf(Method method) {
+                return new MetaMethod(method.getName(), method.getParameterCount(), method.getParameterTypes());
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+
+                MetaMethod method = (MetaMethod) o;
+
+                return name.equals(method.name)
+                        && parametersCount == method.parametersCount
+                        && Arrays.equals(parametersTypes, method.parametersTypes);
+            }
+
+            @Override
+            public int hashCode() {
+                int result = name.hashCode();
+                result = 31 * result + parametersCount;
+                result = 31 * result + Arrays.hashCode(parametersTypes);
+                return result;
+            }
+        }
 
         DemoInvocationHandler(TestLoggingInterface testLoggingInterface) {
             this.testLoggingInterface = testLoggingInterface;
@@ -44,7 +81,7 @@ public class MyAwesomeIoC {
         }
 
         private void loggingParamsIfNeed(Method loggingMethod, Object[] args) {
-            if (loggingMethod == null || !needLogging(loggingMethod)) {
+            if (nothingToLog(loggingMethod, args)) {
                 return;
             }
 
@@ -58,24 +95,25 @@ public class MyAwesomeIoC {
             System.out.println(sb);
         }
 
-        private boolean needLogging(Method loggingMethod) {
-            return loggingMethods.stream()
-                    .anyMatch(
-                            method ->
-                                    method.getName().equals(loggingMethod.getName())
-                                            && method.getParameterCount() == loggingMethod.getParameterCount()
-                                            && Arrays.equals(method.getParameterTypes(), loggingMethod.getParameterTypes())
-                    );
+        private boolean nothingToLog(Method loggingMethod, Object[] args) {
+            return loggingMethod == null
+                    || args == null
+                    || args.length == 0
+                    || !loggingMethods.contains(MetaMethod.valueOf(loggingMethod));
         }
 
-        private List<Method> detectLoggingMethods(TestLoggingInterface testLoggingInterface) {
+        private Set<MetaMethod> detectLoggingMethods(TestLoggingInterface testLoggingInterface) {
             var declaredMethods = testLoggingInterface.getClass().getDeclaredMethods();
 
-            var detectedMethods = new ArrayList<Method>(declaredMethods.length);
+            var detectedMethods = new HashSet<MetaMethod>(declaredMethods.length);
 
             for (var candidate : declaredMethods) {
                 if (candidate.isAnnotationPresent(Log.class)) {
-                    detectedMethods.add(candidate);
+                    if (candidate.getParameterCount() < 1) {
+                        System.out.println("Warning: method " + candidate + " annotated with Log annotation not have parameters and it will not logged");
+                        continue;
+                    }
+                    detectedMethods.add(MetaMethod.valueOf(candidate));
                 }
             }
 
