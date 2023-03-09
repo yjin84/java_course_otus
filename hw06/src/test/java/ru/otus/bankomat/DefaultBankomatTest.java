@@ -6,9 +6,9 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BankomatTest {
+class DefaultBankomatTest {
 
-    private final Bankomat bankomat = Bankomat.newInstance();
+    private final DefaultBankomat bankomat = new DefaultBankomat(MoneyStorageManager.newInstance());
 
     @Test
     void depositSuccess() {
