@@ -38,7 +38,7 @@ public class HomeWork {
         var processors = List.of(new ProcessorConcatFields(),
                 new LoggerProcessor(new ProcessorUpperField10()),
                 new ProcessorSwapValuesField11AndField12(),
-                new ProcessorThrowingException(LocalDateTime.now()));
+                new ProcessorThrowingException(LocalDateTime::now));
 
         var complexProcessor = new ComplexProcessor(processors, ex -> {
             System.out.println(ex.getMessage());

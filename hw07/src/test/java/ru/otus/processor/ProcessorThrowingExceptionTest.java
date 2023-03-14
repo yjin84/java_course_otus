@@ -10,11 +10,17 @@ class ProcessorThrowingExceptionTest {
     @Test
     void testThrowingExceptionOnEvenSecond() {
         assertThrows(RuntimeException.class, () -> {
-            var currentTime = LocalDateTime.now();
-            var processor = new ProcessorThrowingException(currentTime);
+            var processor = new ProcessorThrowingException(ProcessorThrowingExceptionTest::getDateTimeEvenSecond);
             processor.process(null);
-            processor.setCurrentTime(currentTime.plusSeconds(1));
-            processor.process(null);
+
         });
+    }
+
+    private static LocalDateTime getDateTimeEvenSecond() {
+        var currentTime = LocalDateTime.now();
+        if (currentTime.getSecond() % 2 != 0) {
+            currentTime = currentTime.plusSeconds(1);
+        }
+        return currentTime;
     }
 }
