@@ -12,7 +12,7 @@ public class ProcessorThrowingException implements Processor {
     @Override
     public Message process(Message message) {
         var dateTime = dateTimeProvider.getDateTime();
-        if (dateTime != null && dateTime.getSecond() % 2 == 0) {
+        if (dateTime.getSecond() % 2 == 0) {
             throw new RuntimeException("test exception");
         }
         return message;
