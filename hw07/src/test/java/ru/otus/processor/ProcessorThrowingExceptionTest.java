@@ -13,7 +13,6 @@ class ProcessorThrowingExceptionTest {
         assertThrows(RuntimeException.class, () -> {
             var processor = new ProcessorThrowingException(() -> LocalDateTime.of(2024, 1, 1, 0, 0, 2));
             processor.process(null);
-
         });
     }
 }
