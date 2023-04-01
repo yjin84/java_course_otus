@@ -43,13 +43,17 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
                             throw new RuntimeException(e);
                         }
                     }).toArray();
-                    resultObject = (T) entityClassMetaData.getConstructor().newInstance(parameters);
+                    resultObject = getNewEntityInstance(parameters);
                 }
                 return resultObject;
             } catch (SQLException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new DataTemplateException(e);
             }
         });
+    }
+
+    private T getNewEntityInstance(Object[] parameters) throws InstantiationException, IllegalAccessException, InvocationTargetException {
+        return (T)entityClassMetaData.getConstructor().newInstance(parameters);
     }
 
     @Override
@@ -66,7 +70,7 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
                             throw new RuntimeException(e);
                         }
                     }).toArray();
-                    objectList.add((T) entityClassMetaData.getConstructor().newInstance(parameters));
+                    objectList.add(getNewEntityInstance(parameters));
                 }
                 return objectList;
             } catch (SQLException | InstantiationException | IllegalAccessException | InvocationTargetException e) {

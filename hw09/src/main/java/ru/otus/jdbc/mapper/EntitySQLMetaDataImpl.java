@@ -5,22 +5,22 @@ import java.util.List;
 
 public class EntitySQLMetaDataImpl implements EntitySQLMetaData {
 
-    private String selectAllSql;
+    private final String selectAllSql;
 
-    private String selectByIdSql;
+    private final String selectByIdSql;
 
-    private String insertSql;
+    private final String insertSql;
 
-    private String updateSql;
+    private final String updateSql;
 
-    public EntitySQLMetaDataImpl(EntityClassMetaData entityClassMetaData) {
+    public EntitySQLMetaDataImpl(EntityClassMetaData<?> entityClassMetaData) {
         this.selectAllSql = generateSelectAllSql(entityClassMetaData);
         this.selectByIdSql = generateSelectByIdSql(entityClassMetaData);
         this.insertSql = generateInsertSql(entityClassMetaData);
         this.updateSql = generateUpdateSql(entityClassMetaData);
     }
 
-    private String generateUpdateSql(EntityClassMetaData entityClassMetaData) {
+    private String generateUpdateSql(EntityClassMetaData<?> entityClassMetaData) {
         StringBuilder sb = new StringBuilder(1024);
         sb.append("UPDATE ").append(entityClassMetaData.getName()).append(" set");
 
@@ -52,9 +52,7 @@ public class EntitySQLMetaDataImpl implements EntitySQLMetaData {
 
         sb.append(") VALUES (");
 
-        for (int i = 0; i < allFields.size(); i++) {
-            sb.append("?, ");
-        }
+        sb.append("?, ".repeat(allFields.size()));
 
         sb.deleteCharAt(sb.length() - 1);
         sb.deleteCharAt(sb.length() - 1);

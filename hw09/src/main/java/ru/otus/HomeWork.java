@@ -34,7 +34,7 @@ public class HomeWork {
         var entityClassMetaDataFactory = new EntityClassMetaDataFactory();
 
 // Работа с клиентом
-        EntityClassMetaData entityClassMetaDataClient = entityClassMetaDataFactory.createOf(Client.class);
+        EntityClassMetaData<?> entityClassMetaDataClient = entityClassMetaDataFactory.createOf(Client.class);
         EntitySQLMetaData entitySQLMetaDataClient = new EntitySQLMetaDataImpl(entityClassMetaDataClient);
         var dataTemplateClient = new DataTemplateJdbc<Client>(dbExecutor, entitySQLMetaDataClient, entityClassMetaDataClient); //реализация DataTemplate, универсальная
 
@@ -49,7 +49,7 @@ public class HomeWork {
 
 // Сделайте тоже самое с классом Manager (для него надо сделать свою таблицу)
 
-        EntityClassMetaData entityClassMetaDataManager = entityClassMetaDataFactory.createOf(Manager.class);
+        EntityClassMetaData<?> entityClassMetaDataManager = entityClassMetaDataFactory.createOf(Manager.class);
         EntitySQLMetaData entitySQLMetaDataManager = new EntitySQLMetaDataImpl(entityClassMetaDataManager);
         var dataTemplateManager = new DataTemplateJdbc<Manager>(dbExecutor, entitySQLMetaDataManager, entityClassMetaDataManager);
 

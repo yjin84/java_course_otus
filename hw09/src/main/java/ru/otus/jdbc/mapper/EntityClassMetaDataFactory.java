@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class EntityClassMetaDataFactory {
-    public EntityClassMetaData createOf(Class clazz) {
+    public <T> EntityClassMetaData<T> createOf(Class<T> clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("class must not be null");
         }
@@ -17,7 +17,7 @@ public class EntityClassMetaDataFactory {
 
         Field[] declaredFields = clazz.getDeclaredFields();
 
-        Class[] fieldTypes = new Class[declaredFields.length];
+        Class<?>[] fieldTypes = new Class<?>[declaredFields.length];
 
         List<Field> withoutIdFields = new ArrayList<>(declaredFields.length - 1);
 
@@ -40,13 +40,13 @@ public class EntityClassMetaDataFactory {
             throw new IllegalStateException("id field must be mark with Id annotation");
         }
 
-        Constructor constructor;
+        Constructor<T> constructor;
         try {
             constructor = clazz.getConstructor(fieldTypes);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
 
-        return new EntityClassMetaDataImpl(name, constructor, idField, Arrays.asList(declaredFields), withoutIdFields);
+        return new EntityClassMetaDataImpl<>(name, constructor, idField, Arrays.asList(declaredFields), withoutIdFields);
     }
 }

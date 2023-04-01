@@ -6,15 +6,15 @@ import java.util.List;
 
 public class EntityClassMetaDataImpl<T> implements EntityClassMetaData<T> {
     
-    private String name;
+    private final String name;
     
-    private Constructor<T> constructor;
+    private final Constructor<T> constructor;
 
-    private Field idField;
+    private final Field idField;
 
-    private List<Field> allFields;
+    private final List<Field> allFields;
 
-    private List<Field> fieldsWithoutId;
+    private final List<Field> fieldsWithoutId;
 
     public EntityClassMetaDataImpl(String name, Constructor<T> constructor, Field idField, List<Field> allFields, List<Field> fieldsWithoutId) {
         this.name = name;
