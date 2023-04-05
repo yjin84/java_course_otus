@@ -12,14 +12,12 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @Entity
 @Table(name = "client")
@@ -66,15 +64,5 @@ public class Client implements Cloneable {
     @Override
     public Client clone() {
         return new Client(this.id, this.name, this.address != null ? this.address.clone() : null, this.phones != null ? phones.stream().map(Phone::clone).toList() : null);
-    }
-
-    @Override
-    public String toString() {
-        return "Client{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", address=" + address +
-                ", phones=" + phones +
-                '}';
     }
 }
