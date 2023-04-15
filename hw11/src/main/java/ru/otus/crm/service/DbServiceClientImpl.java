@@ -40,16 +40,10 @@ public class DbServiceClientImpl implements DBServiceClient {
             clientDataTemplate.update(session, clientCloned);
             log.info("updated client: {}", clientCloned);
 
-            removeFromCache(clientCloned.getId());
+            evictCache(clientCloned.getId());
 
             return clientCloned;
         });
-    }
-
-    private void removeFromCache(long id) {
-        if (cache != null) {
-            cache.remove(String.valueOf(id));
-        }
     }
 
     @Override
@@ -70,16 +64,6 @@ public class DbServiceClientImpl implements DBServiceClient {
         return optionalClient;
     }
 
-    private void putCache(long id, Client client) {
-        if (cache != null) {
-            cache.put(String.valueOf(id), client);
-        }
-    }
-
-    private Client getFromCache(long id) {
-        return cache != null ? cache.get(String.valueOf(id)) : null;
-    }
-
     @Override
     public List<Client> findAll() {
         return transactionManager.doInReadOnlyTransaction(session -> {
@@ -87,5 +71,21 @@ public class DbServiceClientImpl implements DBServiceClient {
             log.info("clientList:{}", clientList);
             return clientList;
        });
+    }
+
+    private Client getFromCache(long id) {
+        return cache != null ? cache.get(String.valueOf(id)) : null;
+    }
+
+    private void putCache(long id, Client client) {
+        if (cache != null) {
+            cache.put(String.valueOf(id), client);
+        }
+    }
+
+    private void evictCache(long id) {
+        if (cache != null) {
+            cache.remove(String.valueOf(id));
+        }
     }
 }
