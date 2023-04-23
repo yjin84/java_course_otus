@@ -13,14 +13,12 @@ import ru.otus.crm.model.Phone;
 import ru.otus.crm.service.DbServiceClientImpl;
 import ru.otus.dao.InMemoryUserDao;
 import ru.otus.dao.UserDao;
-import ru.otus.server.UsersWebServer;
-import ru.otus.server.UsersWebServerWithFilterBasedSecurity;
+import ru.otus.server.ClientsWebServer;
+import ru.otus.server.ClientsWebServerWithFilterBasedSecurity;
 import ru.otus.services.TemplateProcessor;
 import ru.otus.services.TemplateProcessorImpl;
 import ru.otus.services.UserAuthService;
 import ru.otus.services.UserAuthServiceImpl;
-
-import java.util.List;
 
 /*
     Полезные для демо ссылки
@@ -28,11 +26,8 @@ import java.util.List;
     // Стартовая страница
     http://localhost:8080
 
-    // Страница пользователей
-    http://localhost:8080/users
-
-    // REST сервис
-    http://localhost:8080/api/user/3
+    // Страница клиентов
+    http://localhost:8080/clients
 */
 public class WebServerWithFilterBasedSecurityDemo {
     private static final int WEB_SERVER_PORT = 8080;
@@ -62,10 +57,10 @@ public class WebServerWithFilterBasedSecurityDemo {
         TemplateProcessor templateProcessor = new TemplateProcessorImpl(TEMPLATES_DIR);
         UserAuthService authService = new UserAuthServiceImpl(userDao);
 
-        UsersWebServer usersWebServer = new UsersWebServerWithFilterBasedSecurity(WEB_SERVER_PORT,
-                authService, userDao, dbServiceClient, gson, templateProcessor);
+        ClientsWebServer clientsWebServer = new ClientsWebServerWithFilterBasedSecurity(WEB_SERVER_PORT,
+                authService, dbServiceClient, gson, templateProcessor);
 
-        usersWebServer.start();
-        usersWebServer.join();
+        clientsWebServer.start();
+        clientsWebServer.join();
     }
 }
