@@ -1,0 +1,76 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Клиенты</title>
+    <script>
+        function createClient() {
+            const clientNameTextBox = document.getElementById('clientNameTextBox');
+            const addressStreetTextBox = document.getElementById('addressStreetTextBox');
+            const phoneNumberTextBox = document.getElementById('phoneNumberTextBox');
+
+            let newClient = {
+                name: clientNameTextBox.value,
+                address: {
+                    street: addressStreetTextBox.value
+                },
+                phones: [
+                    {
+                        number: phoneNumberTextBox.value
+                    }
+                ]
+            }
+
+            fetch('api/client/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+              },
+              body: JSON.stringify(newClient)
+            })
+                .then(response => {
+                    clientNameTextBox.value='';
+                    addressStreetTextBox.value='';
+                    phoneNumberTextBox.value='';
+                    window.location.reload()
+                });
+        }
+
+
+    </script>
+</head>
+
+<body>
+<h4>Добавить клиента</h4>
+<input type="text" id="clientNameTextBox" placeholder="Задайте имя клиента">
+<input type="text" id="addressStreetTextBox" placeholder="Задайте адрес клиента">
+<input type="text" id="phoneNumberTextBox" placeholder="Задайте телефон клиента">
+<button onclick="createClient()">Сохранить</button>
+
+<h4>Все клиенты</h4>
+<table style="width: 400px">
+    <thead>
+    <tr>
+        <td style="width: 50px">Id</td>
+        <td style="width: 150px">Имя</td>
+        <td style="width: 100px">Адрес</td>
+        <td style="width: 100px">Телефоны</td>
+    </tr>
+    </thead>
+    <tbody>
+    <#list clients as client>
+    <tr>
+        <td>${client.id}</td>
+        <td>${client.name}</td>
+        <#if client.address??>
+        <td>${client.address.street}</td>
+        <#else>
+        </#if>
+        <#if client.phones??>
+        <td><#list client.phones as phone>${phone.number};</#list></td>
+        <#else>
+        </#if>
+    </tr>
+    </#list>
+</tbody>
+</table>
+</body>
+</html>
