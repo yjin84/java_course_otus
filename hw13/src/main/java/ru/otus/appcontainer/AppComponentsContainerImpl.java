@@ -40,6 +40,35 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
         processConfigs(classes);
     }
 
+    @Override
+    public <C> C getAppComponent(Class<C> componentClass) {
+        return getComponentByClass(componentClass);
+    }
+
+    @Override
+    public <C> C getAppComponent(String componentName) {
+        var component = appComponentsByName.get(componentName);
+        if (component == null) {
+            throw new NotFoundComponentException(String.format("Not found component %s", componentName));
+        }
+        return (C) component;
+    }
+
+    private <C> C getComponentByClass(Class<C> componentClass) {
+        var results = appComponents.stream()
+                .filter(item -> componentClass.isAssignableFrom(item.getClass()))
+                .toList();
+        if (results.size() == 0) {
+            throw new NotFoundComponentException(String.format("Not found component %s", componentClass));
+        }
+
+        if (results.size() > 1) {
+            throw new DoubleComponentException(String.format("Found more than 1 component: %s", componentClass));
+        }
+
+        return (C) results.get(0);
+    }
+
     private void processConfigs(Set<Class<?>> classes) {
         List<MetaConfig> metaConfigs = new ArrayList<>(classes.size());
 
@@ -128,35 +157,6 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
         if (!configClass.isAnnotationPresent(AppComponentsContainerConfig.class)) {
             throw new IllegalArgumentException(String.format("Given class is not config %s", configClass.getName()));
         }
-    }
-
-    @Override
-    public <C> C getAppComponent(Class<C> componentClass) {
-        return getComponentByClass(componentClass);
-    }
-
-    private <C> C getComponentByClass(Class<C> componentClass) {
-        var results = appComponents.stream()
-                .filter(item -> componentClass.isAssignableFrom(item.getClass()))
-                .toList();
-        if (results.size() == 0) {
-            throw new NotFoundComponentException(String.format("Not found component %s", componentClass));
-        }
-
-        if (results.size() > 1) {
-            throw new DoubleComponentException(String.format("Found more than 1 component: %s", componentClass));
-        }
-
-        return (C) results.get(0);
-    }
-
-    @Override
-    public <C> C getAppComponent(String componentName) {
-        var component = appComponentsByName.get(componentName);
-        if (component == null) {
-            throw new NotFoundComponentException(String.format("Not found component %s", componentName));
-        }
-        return (C) component;
     }
 
     private final class MetaConfig {
