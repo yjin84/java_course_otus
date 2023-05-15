@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Клиенты</title>
+    <script>
+        function createClient() {
+            const clientNameTextBox = document.getElementById('clientNameTextBox');
+            const addressStreetTextBox = document.getElementById('addressStreetTextBox');
+            const phoneNumberTextBox = document.getElementById('phoneNumberTextBox');
+
+            let newClient = {
+                name: clientNameTextBox.value,
+                address: {
+                    street: addressStreetTextBox.value
+                },
+                phones: [
+                    {
+                        number: phoneNumberTextBox.value
+                    }
+                ]
+            }
+
+            fetch('/api/client', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+              },
+              body: JSON.stringify(newClient)
+            })
+                .then(response => {
+                    clientNameTextBox.value='';
+                    addressStreetTextBox.value='';
+                    phoneNumberTextBox.value='';
+                    window.location.reload()
+                });
+        }
+
+
+    </script>
+</head>
+
+<body>
+<h4>Добавить клиента</h4>
+<input type="text" id="clientNameTextBox" placeholder="Задайте имя клиента">
+<input type="text" id="addressStreetTextBox" placeholder="Задайте адрес клиента">
+<input type="text" id="phoneNumberTextBox" placeholder="Задайте телефон клиента">
+<button onclick="createClient()">Сохранить</button>
+
+<h4>Все клиенты</h4>
+<table style="width: 400px">
+    <thead>
+    <tr>
+        <td style="width: 50px">Id</td>
+        <td style="width: 150px">Имя</td>
+        <td style="width: 100px">Адрес</td>
+        <td style="width: 100px">Телефоны</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="client : ${clients}">
+        <td th:text="${client.id}"></td>
+        <td th:text="${client.name}"></td>
+        <td th:text="${client.address.street}"></td>
+        <td><span th:each="phone : ${client.phones}" th:text="${phone.number}"></span></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
