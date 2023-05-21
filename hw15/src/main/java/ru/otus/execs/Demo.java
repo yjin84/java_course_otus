@@ -13,7 +13,7 @@ public class Demo {
         thread2.start();
     }
 
-    public void inc(int threadNumber) {
+    public synchronized void inc(int threadNumber) {
         int inc = 1;
         boolean reversed = false;
 
@@ -32,14 +32,14 @@ public class Demo {
     public synchronized void printNumber(int threadNumber, int number) {
         try {
             while (lastThread == threadNumber) {
-                this.wait();
+                wait();
             }
 
             lastThread = threadNumber;
 
             System.out.println("Thread " + lastThread + " " + number);
 
-            this.notify();
+            notify();
         } catch (InterruptedException ex) {
             System.out.println("Thread " + threadNumber + " interrupted");
         }
