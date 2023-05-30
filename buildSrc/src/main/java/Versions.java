@@ -18,4 +18,13 @@ public interface Versions {
 
     String reflections = "0.10.2";
 
+    String sockjs = "1.5.1";
+    String stomp = "2.3.4";
+    String bootstrap = "5.2.3";
+    String springDocOpenapiUi = "2.0.2";
+    String jsr305 = "3.0.2";
+
+    String errorProneAnnotations = "2.11.0";
+    String tomcatAnnotationsApi = "6.0.53";
+    String grpc = "1.44.1";
 }
