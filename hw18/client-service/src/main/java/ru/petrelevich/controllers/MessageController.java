@@ -38,7 +38,6 @@ public class MessageController {
     @MessageMapping("/message.{roomId}")
     public void getMessage(@DestinationVariable String roomId, Message message) {
         if (magicRoomId.equals(roomId)) {
-            template.convertAndSend(String.format("%s%s", TOPIC_TEMPLATE, roomId),new Message("Unsupported room id"));
             return;
         }
 
@@ -61,9 +60,15 @@ public class MessageController {
         }
         var roomId = parseRoomId(simpDestination);
 
-        getMessagesByRoomId(roomId)
-                .doOnError(ex -> logger.error("getting messages for roomId:{} failed", roomId, ex))
-                .subscribe(message -> template.convertAndSend(simpDestination, message));
+        if (magicRoomId.equals(String.valueOf(roomId))) {
+            getAllMessages()
+                    .doOnError(ex -> logger.error("getting messages failed", ex))
+                    .subscribe(message -> template.convertAndSend(simpDestination, message));
+        } else {
+            getMessagesByRoomId(roomId)
+                    .doOnError(ex -> logger.error("getting messages for roomId:{} failed", roomId, ex))
+                    .subscribe(message -> template.convertAndSend(simpDestination, message));
+        }
     }
 
     private long parseRoomId(String simpDestination) {
@@ -84,6 +89,18 @@ public class MessageController {
 
     private Flux<Message> getMessagesByRoomId(long roomId) {
         return datastoreClient.get().uri(String.format("/msg/%s", roomId))
+                .accept(MediaType.APPLICATION_NDJSON)
+                .exchangeToFlux(response -> {
+                    if (response.statusCode().equals(HttpStatus.OK)) {
+                        return response.bodyToFlux(Message.class);
+                    } else {
+                        return response.createException().flatMapMany(Mono::error);
+                    }
+                });
+    }
+
+    private Flux<Message> getAllMessages() {
+        return datastoreClient.get().uri("/msg")
                 .accept(MediaType.APPLICATION_NDJSON)
                 .exchangeToFlux(response -> {
                     if (response.statusCode().equals(HttpStatus.OK)) {

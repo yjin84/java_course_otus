@@ -1,20 +1,15 @@
 package ru.petrelevich.api;
 
 
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import ru.petrelevich.domain.Message;
 import ru.petrelevich.domain.MessageDto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
 import ru.petrelevich.service.DataStore;
 
 @RestController
@@ -23,21 +18,14 @@ public class DataController {
     private final DataStore dataStore;
     private final Scheduler workerPool;
 
-    private final String magicRoomId;
-
-    public DataController(DataStore dataStore, Scheduler workerPool, @Value("${magicRoomId}") String magicRoomId) {
+    public DataController(DataStore dataStore, Scheduler workerPool) {
         this.dataStore = dataStore;
         this.workerPool = workerPool;
-        this.magicRoomId = magicRoomId;
     }
 
     @PostMapping(value = "/msg/{roomId}")
     public Mono<Long> messageFromChat(@PathVariable("roomId") String roomId,
                                       @RequestBody MessageDto messageDto) {
-        if (magicRoomId.equals(roomId)) {
-            return Mono.error(new IllegalArgumentException("Illegal room id"));
-        }
-
         var messageStr = messageDto.messageStr();
 
         var msgId = Mono.just(new Message(roomId, messageStr))
@@ -54,25 +42,17 @@ public class DataController {
 
     @GetMapping(value = "/msg/{roomId}", produces = MediaType.APPLICATION_NDJSON_VALUE)
     public Flux<MessageDto> getMessagesByRoomId(@PathVariable("roomId") String roomId) {
-
-        if (magicRoomId.equals(roomId)) {
-            return loadAllMessages();
-        }
-
-        return loadMessagesForRoomId(roomId);
-    }
-
-    private Flux<MessageDto> loadAllMessages() {
-        return dataStore.loadAllMessages()
+        return Mono.just(roomId)
+                .doOnNext(room -> log.info("getMessagesByRoomId, room:{}", room))
+                .flatMapMany(dataStore::loadMessages)
                 .map(message -> new MessageDto(message.getMsgText()))
                 .doOnNext(msgDto -> log.info("msgDto:{}", msgDto))
                 .subscribeOn(workerPool);
     }
 
-    private Flux<MessageDto> loadMessagesForRoomId(String roomId) {
-        return Mono.just(roomId)
-                .doOnNext(room -> log.info("getMessagesByRoomId, room:{}", room))
-                .flatMapMany(dataStore::loadMessages)
+    @GetMapping(value = "/msg", produces = MediaType.APPLICATION_NDJSON_VALUE)
+    public Flux<MessageDto> getAllMessages() {
+        return dataStore.loadAllMessages()
                 .map(message -> new MessageDto(message.getMsgText()))
                 .doOnNext(msgDto -> log.info("msgDto:{}", msgDto))
                 .subscribeOn(workerPool);
