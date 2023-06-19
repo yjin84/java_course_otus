@@ -45,9 +45,6 @@ public class MessageController {
         saveMessage(roomId, message)
                 .subscribe(msgId -> logger.info("message send id:{}", msgId));
 
-        saveMessage(magicRoomId, message)
-                .subscribe(msgId -> logger.info("message send id:{}", msgId));
-
         template.convertAndSend(String.format("%s%s", TOPIC_TEMPLATE, roomId),
                 new Message(HtmlUtils.htmlEscape(message.messageStr())));
     }
@@ -85,7 +82,9 @@ public class MessageController {
     }
 
     private Flux<Message> getMessagesByRoomId(long roomId) {
-        return datastoreClient.get().uri(String.format("/msg/%s", roomId))
+        String uri = magicRoomId.equals(String.valueOf(roomId)) ? "/msgs" : String.format("/msg/%s", roomId);
+
+        return datastoreClient.get().uri(uri)
                 .accept(MediaType.APPLICATION_NDJSON)
                 .exchangeToFlux(response -> {
                     if (response.statusCode().equals(HttpStatus.OK)) {
